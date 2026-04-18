@@ -1,0 +1,38 @@
+name: Swarm CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install lint tools
+        run: pip install pyflakes
+
+      - name: Check syntax (pyflakes)
+        run: |
+          pyflakes config.py llm_engine.py orchestrator.py \
+                   memory_system.py message_bus.py media_engine.py \
+                   agents/agent_definitions.py agents/agent_engine.py \
+                   skills/general/general_skills.py \
+                   discord/bot.py || true
+
+      - name: Confirm key files exist
+        run: |
+          test -f config.py
+          test -f requirements.txt
+          test -f kaggle_setup.ipynb
+          test -f discord/bot.py
+          test -f skills/general/general_skills.py
+          echo "✅ Todos os arquivos presentes"

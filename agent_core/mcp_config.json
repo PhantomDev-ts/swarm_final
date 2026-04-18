@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "swarm": {
+      "type":    "stdio",
+      "command": "python3",
+      "args":    ["agent_core/mcp_server.py"],
+      "env": {
+        "G4F_API_KEY":    "${G4F_API_KEY}",
+        "HF_TOKEN":       "${HF_TOKEN}",
+        "DISCORD_TOKEN":  "${DISCORD_TOKEN}"
+      }
+    }
+  }
+}

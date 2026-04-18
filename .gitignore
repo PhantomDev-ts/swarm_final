@@ -1,0 +1,26 @@
+# Ambiente e segredos
+.env
+*.env
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Dados gerados em runtime (não versionar)
+memory/
+messages/
+logs/
+
+# Mídia gerada
+media/ltxv/
+media/zimage/
+
+# Kaggle / Jupyter
+.ipynb_checkpoints/
+*.kaggle
+
+# IDEs
+.vscode/
+.idea/
+*.swp

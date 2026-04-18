@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="360" viewBox="0 0 280 360">
+  <title>Byte — AI Agent Swarm mascot</title>
+  <style>
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+    @keyframes wiggle { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+    .body { animation: float 3s ease-in-out infinite; transform-origin: 140px 155px; }
+    .arm-r { animation: wiggle 2.5s ease-in-out infinite; transform-origin: 175px 150px; }
+  </style>
+
+  <g class="body">
+    <path d="M140 52 C162 36,198 44,212 67 C228 92,228 116,221 134
+             C234 145,237 164,228 178 C219 192,202 197,190 193
+             C183 207,168 216,150 214 C132 212,118 203,113 190
+             C99 194,83 188,74 175 C65 162,67 144,79 133
+             C70 115,70 92,85 74 C98 56,120 50,140 52 Z"
+          fill="#2DD4BF" stroke="#111" stroke-width="3.2" stroke-linejoin="round"/>
+
+    <ellipse cx="120" cy="138" rx="17" ry="20" fill="white" stroke="#111" stroke-width="2.2"/>
+    <ellipse cx="162" cy="136" rx="17" ry="20" fill="white" stroke="#111" stroke-width="2.2"/>
+    <ellipse cx="121" cy="142" rx="9"  ry="10" fill="#111"/>
+    <ellipse cx="163" cy="140" rx="9"  ry="10" fill="#111"/>
+    <ellipse cx="124" cy="138" rx="3"  ry="3.5" fill="white"/>
+    <ellipse cx="166" cy="136" rx="3"  ry="3.5" fill="white"/>
+
+    <path d="M122 172 Q141 182 160 172" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round"/>
+
+    <line x1="79"  y1="145" x2="38"  y2="122" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+    <line x1="38"  y1="122" x2="25"  y2="148" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+    <ellipse cx="23" cy="152" rx="6" ry="4.5" fill="#111" transform="rotate(-20,23,152)"/>
+
+    <g class="arm-r">
+      <line x1="198" y1="147" x2="238" y2="122" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+      <line x1="238" y1="122" x2="253" y2="97"  stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+      <polygon points="253,76 261,97 245,97" fill="#F59E0B" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+    </g>
+
+    <line x1="128" y1="212" x2="118" y2="255" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+    <line x1="118" y1="255" x2="106" y2="280" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+    <ellipse cx="102" cy="285" rx="12" ry="6" fill="#111"/>
+
+    <line x1="152" y1="212" x2="160" y2="255" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+    <line x1="160" y1="255" x2="170" y2="280" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+    <ellipse cx="174" cy="285" rx="12" ry="6" fill="#111"/>
+
+    <ellipse cx="84"  cy="71" rx="5" ry="5" fill="#2DD4BF" stroke="#111" stroke-width="1.8"/>
+    <ellipse cx="74"  cy="80" rx="3.5" ry="3.5" fill="#2DD4BF" stroke="#111" stroke-width="1.5"/>
+  </g>
+
+  <text x="140" y="320" text-anchor="middle" font-family="monospace" font-size="15" font-weight="700" fill="#2DD4BF" letter-spacing="4">BYTE</text>
+  <text x="140" y="337" text-anchor="middle" font-family="monospace" font-size="10" fill="#888" letter-spacing="2">swarm agent</text>
+</svg>
