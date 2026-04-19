@@ -1,7 +1,7 @@
 """
-AI Agent Swarm V2 — Configuração Central
-Todos os modelos via g4f.dev (API key única)
-Geração local via LTX-2.3 + Z-Image no Kaggle T4 x2
+AI Agent Swarm — Configuração Central
+Todos os LLMs via g4f.space/v1 (URL correta — g4f.dev é só o site)
+Providers: DeepInfra e Ollama roteados pelo g4f
 """
 
 import os
@@ -19,75 +19,114 @@ DISCORD_TOKEN    = os.getenv("DISCORD_TOKEN", "")
 DISCORD_PREFIX   = "!"
 DISCORD_GUILD_ID = int(os.getenv("DISCORD_GUILD_ID", "0"))
 
-# ─── Canais Discord ───────────────────────────────────────────────────────────
 CHANNELS = {
-    "geral":      "swarm-geral",
-    "marketing":  "swarm-marketing",
-    "dev":        "swarm-dev",
-    "design":     "swarm-design",
-    "research":   "swarm-research",
-    "conteudo":   "swarm-conteudo",
-    "midia":      "swarm-midia",
-    "logs":       "swarm-logs",
+    "geral":     "swarm-geral",
+    "marketing": "swarm-marketing",
+    "dev":       "swarm-dev",
+    "design":    "swarm-design",
+    "research":  "swarm-research",
+    "conteudo":  "swarm-conteudo",
+    "midia":     "swarm-midia",
+    "logs":      "swarm-logs",
 }
 
-# ─── g4f API Key (única para todos os modelos) ────────────────────────────────
-# Obtenha em: https://g4f.dev → Dashboard → API Keys
-# No Kaggle: Settings > Secrets > G4F_API_KEY
+# ─── g4f — URLs ───────────────────────────────────────────────────────────────
+# g4f.dev  = site de documentação (não é endpoint de API!)
+# g4f.space/v1  = endpoint real com API key, roteia para DeepInfra/Ollama/etc.
+# g4f.space/api/<provider>  = endpoints gratuitos sem key
+
 G4F_API_KEY = os.getenv("G4F_API_KEY", "")
 
-# Endpoint base do g4f.dev (todos os modelos passam por aqui)
-G4F_BASE_URL = "https://g4f.dev/v1"
+# Endpoints
+G4F_HOSTED_URL  = "https://g4f.space/v1"          # Requer G4F_API_KEY
+G4F_OLLAMA_URL  = "https://g4f.space/api/ollama"  # Gratuito, sem key
+G4F_GEMINI_URL  = "https://g4f.space/api/gemini"  # Gratuito, sem key
+G4F_NVIDIA_URL  = "https://g4f.space/api/nvidia"  # Gratuito, sem key
+G4F_AUTO_URL    = "https://g4f.space/api/auto"    # Gratuito, auto-seleciona
 
-# ─── Modelos via g4f.dev ──────────────────────────────────────────────────────
-# Ollama e DeepInfra são acessados PELO g4f como providers internos
-# Você não precisa de chaves separadas para eles
-G4F_MODELS = {
-    "gemini_flash": {
-        "model":       "gemini-3.0-flash",
-        "vision":      False,
-        "description": "Gemini 3.0 Flash — rápido, tasks gerais e análise de imagem",
+# ─── Catálogo completo de modelos ─────────────────────────────────────────────
+# provider: "hosted" → g4f.space/v1 (key obrigatória)
+#           "ollama" → g4f.space/api/ollama (gratuito)
+#           "gemini" → g4f.space/api/gemini (gratuito)
+#           "nvidia" → g4f.space/api/nvidia (gratuito)
+
+ALL_MODELS: dict[str, dict] = {
+
+    # ── DeepInfra via g4f.space/v1 (requer G4F_API_KEY) ──────────────────────
+    "qwen3.5-397b": {
+        "model":    "Qwen/Qwen3.5-397B-A17B",
+        "provider": "hosted",
+        "vision":   True,
+        "tts":      False,
+        "desc":     "Qwen 3.5 397B — flagship, tem visão",
     },
-    "glm": {
-        "model":       "glm-5.1",
-        "vision":      False,
-        "description": "GLM 5.1 — raciocínio estruturado",
+    "glm-5.1": {
+        "model":    "zai-org/GLM-5.1",
+        "provider": "hosted",
+        "vision":   False,
+        "tts":      False,
+        "desc":     "GLM-5.1 — 94% do Claude Opus em coding",
     },
-    "minimax": {
-        "model":       "minimax-2.7",
-        "vision":      False,
-        "description": "MiniMax 2.7 — via g4f → Ollama provider",
+    "kimi-k2.5": {
+        "model":    "moonshotai/Kimi-K2.5",
+        "provider": "hosted",
+        "vision":   False,
+        "tts":      False,
+        "desc":     "Kimi K2.5 — forte em agentic coding",
     },
-    "qwen_vision": {
-        "model":       "Qwen/Qwen3.5-397B",
-        "vision":      True,
-        "description": "Qwen 3.5 397B com visão — via g4f → DeepInfra provider",
+    "inworld-tts": {
+        "model":    "inworld-ai/inworld-tts-1.5-max",
+        "provider": "hosted",
+        "vision":   False,
+        "tts":      True,
+        "desc":     "Inworld TTS 1.5 Max — síntese de voz",
+    },
+
+    # ── Ollama via g4f.space/api/ollama (GRATUITO, sem key) ───────────────────
+    "gemini-3-flash": {
+        "model":    "gemini-3-flash-preview",
+        "provider": "ollama",
+        "vision":   True,
+        "tts":      False,
+        "desc":     "Gemini 3 Flash Preview — gratuito, rápido, tem visão",
     },
 }
 
-# Modelo padrão por equipe
-TEAM_DEFAULT_MODEL = {
-    "neuromarketing": "gemini_flash",
-    "dev":            "qwen_vision",   # visão para analisar código/screenshots
-    "design":         "qwen_vision",   # visão para analisar wireframes/imagens
-    "research":       "gemini_flash",
-    "conteudo":       "gemini_flash",
+# ─── Modelos padrão por equipe ────────────────────────────────────────────────
+# Escolha baseada em: capability + se tem key disponível
+# hosted = requer G4F_API_KEY | ollama = gratuito
+
+TEAM_DEFAULT_MODEL: dict[str, str] = {
+    "neuromarketing": "gemini-3-flash",   # gratuito, rápido, visão
+    "dev":            "glm-5.1",          # hosted, coding especializado
+    "design":         "qwen3.5-397b",     # hosted, visão (analisa screenshots)
+    "research":       "kimi-k2.5",        # hosted, reasoning analítico
+    "conteudo":       "gemini-3-flash",   # gratuito, criativo e rápido
 }
+
+# Fallback gratuito quando não há G4F_API_KEY
+TEAM_FREE_MODEL: dict[str, str] = {
+    "neuromarketing": "gemini-3-flash",
+    "dev":            "gemini-3-flash",
+    "design":         "gemini-3-flash",
+    "research":       "gemini-3-flash",
+    "conteudo":       "gemini-3-flash",
+}
+
+# Agente autônomo — melhor disponível
+AUTONOMOUS_MODEL         = "gemini-3-flash"    # gratuito
+AUTONOMOUS_MODEL_PREMIUM = "qwen3.5-397b"      # hosted (com visão)
 
 # ─── Geração de mídia (local no Kaggle) ───────────────────────────────────────
 HUGGINGFACE_TOKEN = os.getenv("HF_TOKEN", "")
-
-LTXV_MODEL_ID    = "Lightricks/LTX-Video"
-ZIMAGE_MODEL_ID  = "Tongyi-MAI/Z-Image-Turbo"
-
-# Resolução padrão (T4 x2 = 32GB VRAM total)
+LTXV_MODEL_ID     = "Lightricks/LTX-Video"
+ZIMAGE_MODEL_ID   = "Tongyi-MAI/Z-Image-Turbo"
 LTXV_RESOLUTION   = (704, 480)
-LTXV_NUM_FRAMES   = 97          # (12×8)+1 = ~4s a 24fps
+LTXV_NUM_FRAMES   = 97
 ZIMAGE_RESOLUTION = (1024, 1024)
 
 # ─── LLM Engine ───────────────────────────────────────────────────────────────
-MAX_TOKENS  = 3000
-MAX_HISTORY = 8
+MAX_TOKENS  = 4000
+MAX_HISTORY = 10
 
-# ─── Agentes ──────────────────────────────────────────────────────────────────
 AGENT_NAMES = ["neuromarketing", "dev", "design", "research", "conteudo"]

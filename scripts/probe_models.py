@@ -1,67 +1,104 @@
 """
 scripts/probe_models.py
-Testa todos os modelos LLM configurados e exibe latência + status.
-Execute antes de iniciar o bot para confirmar quais modelos estão online.
+
+Testa modelos do catálogo e mostra status, latência e provider.
 
 Uso:
-    python scripts/probe_models.py
-    python scripts/probe_models.py --verbose
+    python scripts/probe_models.py                  # testa todos os ollama (gratuitos)
+    python scripts/probe_models.py --hosted         # testa hosted (precisa de key)
+    python scripts/probe_models.py --all            # testa tudo
+    python scripts/probe_models.py --tags coding    # filtra por tag
+    python scripts/probe_models.py --discover       # lista modelos via GET /models
+    python scripts/probe_models.py -v               # verbose (mostra raw request)
 """
 
-import sys, os, argparse, time
+import sys, os, argparse
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from config import G4F_MODELS
-from llm_engine import probe_model, call_llm
+from config import ALL_MODELS, G4F_API_KEY
+from llm_engine import probe_model, probe_all, list_available_models
+
+C = {
+    "cyan":   "\033[36m", "green":  "\033[32m", "yellow": "\033[33m",
+    "red":    "\033[31m", "dim":    "\033[2m",  "bold":   "\033[1m",
+    "reset":  "\033[0m",
+}
+def c(color: str, text: str) -> str:
+    return f"{C[color]}{text}{C['reset']}"
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Testa modelos LLM do swarm")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Mostra resposta completa")
-    parser.add_argument("--model",   "-m", default="",          help="Testa apenas um modelo específico")
-    args = parser.parse_args()
+    p = argparse.ArgumentParser()
+    p.add_argument("--hosted",   action="store_true", help="Testa só modelos hosted (key obrigatória)")
+    p.add_argument("--ollama",   action="store_true", help="Testa só modelos Ollama (gratuito)")
+    p.add_argument("--all",      action="store_true", help="Testa todos")
+    p.add_argument("--tags",     nargs="+",           help="Filtra por tags (ex: coding vision)")
+    p.add_argument("--discover", action="store_true", help="Lista modelos via GET /models da API")
+    p.add_argument("-v", "--verbose", action="store_true")
+    args = p.parse_args()
 
-    targets = [args.model] if args.model and args.model in G4F_MODELS else list(G4F_MODELS.keys())
+    print(f"\n{c('cyan', c('bold', '══ AI Agent Swarm — Probe de Modelos ══'))}")
 
-    print("\n" + "═" * 70)
-    print("  AI Agent Swarm V2 — Probe de Modelos LLM")
-    print("═" * 70)
+    if G4F_API_KEY:
+        print(c("green", f"✓ G4F_API_KEY detectada ({G4F_API_KEY[:14]}...)"))
+    else:
+        print(c("yellow", "⚠  G4F_API_KEY não definida — só modelos 'ollama' funcionarão"))
 
-    results = {}
-    for key in targets:
-        cfg = G4F_MODELS[key]
-        print(f"\n🔬 Testando: {key}")
-        print(f"   Provider: {cfg['provider']}")
-        print(f"   Model:    {cfg['model']}")
-        print(f"   Vision:   {'sim' if cfg.get('vision') else 'não'}")
-        print(f"   Desc:     {cfg['description']}")
+    # Discovery
+    if args.discover:
+        print(f"\n{c('cyan', '▸ Listando modelos disponíveis via GET /models...')}")
+        for prov in (["hosted"] if G4F_API_KEY else []) + ["ollama"]:
+            print(f"\n  {c('dim', prov + ':')} ")
+            ids = list_available_models(prov)
+            for mid in ids[:50]:
+                print(f"    {mid}")
+            if len(ids) > 50:
+                print(f"    ... e mais {len(ids)-50}")
+        return
 
-        start  = time.time()
-        result = probe_model(key)
-        ms     = int((time.time() - start) * 1000)
+    # Determina filtro de provider
+    if args.hosted:
+        pf = "hosted"
+    elif args.ollama or not (args.hosted or args.all):
+        pf = "ollama"   # padrão: testar ollama (gratuito)
+    else:
+        pf = None
 
-        icon = "✅" if result["ok"] else "❌"
-        print(f"   Status:   {icon} {'ONLINE' if result['ok'] else 'OFFLINE'} ({ms}ms)")
+    tags = args.tags or None
 
-        if args.verbose or not result["ok"]:
-            print(f"   Resposta: {result['response_preview']}")
+    print(f"\n  Provider: {c('cyan', pf or 'todos')}  |  Tags: {c('cyan', str(tags) or 'todas')}")
+    print(f"  {c('dim', 'Testando em paralelo (6 threads)...')}\n")
 
-        results[key] = result
+    results = probe_all(tags=tags, provider_filter=pf, verbose=args.verbose)
 
-    # Resumo
-    print("\n" + "═" * 70)
-    online  = [k for k, r in results.items() if r["ok"]]
-    offline = [k for k, r in results.items() if not r["ok"]]
-    print(f"✅ Online  ({len(online)}): {', '.join(online) or 'nenhum'}")
-    print(f"❌ Offline ({len(offline)}): {', '.join(offline) or 'nenhum'}")
-    print("═" * 70 + "\n")
+    online, offline = [], []
+    rows = sorted(results.items(), key=lambda x: (not x[1]["ok"], x[1]["latency_ms"]))
 
-    # Recomendação de modelos para usar
+    hdr = f"{'Modelo':<28} {'Status':<8} {'ms':>6}  {'Provider':<8}  {'Model ID'}"
+    print(c("dim", hdr))
+    print(c("dim", "─" * 85))
+
+    for key, r in rows:
+        icon  = c("green", "✅ OK  ") if r["ok"] else c("red",   "❌ FAIL")
+        ms    = f"{r['latency_ms']:>5}ms"
+        prov  = c("cyan", r["provider"])
+        mid   = c("dim", r["model_id"][:40])
+        print(f"{key:<28} {icon} {ms}  {prov:<18}  {mid}")
+        (online if r["ok"] else offline).append(key)
+
+    print(c("dim", "\n─" * 85))
+    print(f"{c('green', f'✅ Online:  {len(online)}')}  |  {c('red', f'❌ Offline: {len(offline)}')}")
+
     if online:
-        print("💡 Sugestão: edite TEAM_DEFAULT_MODEL em config.py para usar apenas modelos online.\n")
+        print(f"\n{c('cyan', 'Modelos online:')}")
+        for k in online:
+            cfg = ALL_MODELS[k]
+            print(f"  {k:<28} {c('dim', cfg['desc'])}")
 
-    return 0 if len(online) > 0 else 1
+    if offline and args.hosted:
+        print(f"\n{c('yellow', 'Dica:')} modelos offline podem ter nome diferente na API.")
+        print(f"  Rode: {c('cyan', 'python scripts/probe_models.py --discover')} para ver os IDs reais.")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
