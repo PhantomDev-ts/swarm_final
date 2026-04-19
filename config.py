@@ -44,12 +44,12 @@ G4F_BASE_URL = "https://g4f.dev/v1"
 # Você não precisa de chaves separadas para eles
 G4F_MODELS = {
     "gemini_flash": {
-        "model":       "gemini-2.0-flash",
-        "vision":      True,
-        "description": "Gemini 2.0 Flash — rápido, tasks gerais e análise de imagem",
+        "model":       "gemini-3.0-flash",
+        "vision":      False,
+        "description": "Gemini 3.0 Flash — rápido, tasks gerais e análise de imagem",
     },
     "glm": {
-        "model":       "glm-4-plus",
+        "model":       "glm-5.1",
         "vision":      False,
         "description": "GLM 5.1 — raciocínio estruturado",
     },
