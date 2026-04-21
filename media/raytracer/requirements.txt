@@ -1,0 +1,11 @@
+# Ray Tracer - Dependências Opcionais
+# 
+# O ray tracer funciona 100% sem dependências externas
+# Essas são opcionais apenas para funcionalidades extras
+
+# Para salvar em PNG (opcional)
+# O formato PPM funciona sem isso
+Pillow>=9.0.0
+
+# Para executar testes
+pytest>=7.0.0
